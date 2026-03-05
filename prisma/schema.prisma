@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Proposal {
+  id            String   @id @default(cuid())
+  title         String
+  rawRequest    String
+  prdJson       String   // JSON string: PrdJson
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  shareToken    String   @unique
+  lastAuditJson String?  // JSON string: AuditJson
+  alignmentScore Int     @default(0)
+  status        String   @default("Draft")
+
+  threads       Thread[]
+  decisions     Decision[]
+  andyMessages  AndyMessage[]
+}
+
+model Thread {
+  id          String   @id @default(cuid())
+  proposalId  String
+  blockId     String
+  role        String
+  status      String   @default("open")
+  isSuggested Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  messages    ThreadMessage[]
+
+  @@index([proposalId, blockId])
+}
+
+model ThreadMessage {
+  id        String   @id @default(cuid())
+  threadId  String
+  author    String
+  body      String
+  createdAt DateTime @default(now())
+
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+}
+
+model AndyMessage {
+  id          String   @id @default(cuid())
+  proposalId  String
+  sectionKey  String
+  message     String
+  type        String   // "role_update" | "system"
+  forRoles    String   // JSON array, e.g. '["Product","Data"]'
+  createdAt   DateTime @default(now())
+
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId, sectionKey])
+}
+
+model Decision {
+  id         String   @id @default(cuid())
+  proposalId String
+  title      String
+  outcome    String
+  rationale  String?
+  ownerRole  String?
+  createdAt  DateTime @default(now())
+
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+}
