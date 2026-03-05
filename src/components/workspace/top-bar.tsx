@@ -11,6 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ShareModal } from "./share-modal";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   downloadMarkdown,
   downloadPlainText,
@@ -33,6 +40,7 @@ export function TopBar({
   draftedRoles,
   onRoleChange,
 }: TopBarProps) {
+  const router = useRouter();
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -47,11 +55,25 @@ export function TopBar({
   return (
     <header className="absolute inset-x-0 top-0 z-30 flex h-16 items-center justify-between px-4 backdrop-blur-md [background:linear-gradient(to_bottom,hsl(var(--background))_0%,hsl(var(--background)/0.7)_60%,transparent_100%)]">
       <div className="flex items-center gap-3">
-        <img
-          src="/humans-logo.svg"
-          alt="humans&"
-          className="h-12 w-auto"
-        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => router.push("/")}
+                className="cursor-pointer transition-opacity hover:opacity-70"
+              >
+                <img
+                  src="/humans-logo.svg"
+                  alt="humans&"
+                  className="h-12 w-auto"
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={4}>
+              New session
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Role switcher — centered */}
